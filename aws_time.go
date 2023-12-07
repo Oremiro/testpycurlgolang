@@ -9,33 +9,37 @@ import (
 
 func main() {
 	url := "https://aws.okx.com/api/v5/public/time"
-	numRequests := 201
+	timeout := 0.5 // seconds
 
+	// Create an HTTP client with HTTP/2 support
 	client := &http.Client{
 		Transport: &http2.Transport{},
 	}
 
 	var totalDuration time.Duration
 
-	for i := 1; i <= numRequests; i++ {
+	for i := 1; ; i++ {
 		startTime := time.Now()
 
+		// Make the request
 		response, err := client.Get(url)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
 		}
-		defer response.Body.Close()
-
+		err = response.Body.Close()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		elapsedTime := time.Since(startTime)
 
+		// Calculate and print average time after each iteration
 		if i != 1 {
 			totalDuration += elapsedTime
+			averageDuration := totalDuration / time.Duration(i-1)
+			fmt.Printf("[GO] Average time after %d requests: %s\n\n", i-1, averageDuration)
 		}
 
-		fmt.Printf("Attempt %d: HTTP GET request to %s completed in %s\n", i, url, elapsedTime)
+		time.Sleep(time.Duration(timeout * float64(time.Second)))
 	}
-
-	averageDuration := totalDuration / time.Duration(numRequests)
-	fmt.Printf("\nAverage time for %d requests: %s\n", numRequests, averageDuration)
 }
