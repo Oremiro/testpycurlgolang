@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/net/http2"
 	"net/http"
 	"time"
 )
@@ -10,7 +11,9 @@ func main() {
 	url := "https://aws.okx.com/api/v5/public/time"
 	numRequests := 201
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http2.Transport{},
+	}
 
 	var totalDuration time.Duration
 
@@ -33,6 +36,6 @@ func main() {
 		fmt.Printf("Attempt %d: HTTP GET request to %s completed in %s\n", i, url, elapsedTime)
 	}
 
-	averageDuration := totalDuration / time.Duration(numRequests-1)
-	fmt.Printf("\ngolang: Average time for %d requests: %s\n", numRequests, averageDuration)
+	averageDuration := totalDuration / time.Duration(numRequests)
+	fmt.Printf("\nAverage time for %d requests: %s\n", numRequests, averageDuration)
 }
